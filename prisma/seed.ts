@@ -17,7 +17,7 @@ async function main() {
   await prisma.visitor.deleteMany();
   await prisma.employee.deleteMany();
 
-  const employees = await prisma.employee.createManyAndReturn({
+  await prisma.employee.createMany({
     data: [
       { name: "Алексей Иванов", department: "IT", position: "Руководитель IT" },
       { name: "Мария Петрова", department: "HR", position: "HR-менеджер" },
@@ -26,6 +26,7 @@ async function main() {
       { name: "Сергей Новиков", department: "Администрация", position: "Директор" },
     ],
   });
+  const employees = await prisma.employee.findMany();
 
   const visitorData = [
     { fullName: "Андрей Морозов", phone: "+7 900 111 2233", email: "morozov@mail.ru", documentNumber: "4510 123456" },
@@ -60,7 +61,8 @@ async function main() {
     { fullName: "Зинаида Ковалёва", phone: "+7 999 123 4567", email: "kovaleva@inbox.ru", documentNumber: "4539 012345" },
   ];
 
-  const visitors = await prisma.visitor.createManyAndReturn({ data: visitorData });
+  await prisma.visitor.createMany({ data: visitorData });
+  const visitors = await prisma.visitor.findMany();
 
   const purposes = [
     "Деловая встреча",
