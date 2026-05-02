@@ -30,7 +30,7 @@ services:
       db:
         condition: service_healthy
     command: >
-      sh -c "npx prisma migrate deploy && npx tsx prisma/seed.ts && node server.js"
+      sh -c "npx prisma migrate deploy && npx tsx prisma/seed.ts && node_modules/.bin/next start"
 
 volumes:
   mysql_data:
