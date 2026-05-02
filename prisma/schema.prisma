@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Visitor {
+  id             String   @id @default(uuid())
+  fullName       String
+  phone          String
+  email          String?
+  documentNumber String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  visits         Visit[]
+}
+
+model Employee {
+  id         String  @id @default(uuid())
+  name       String
+  department String
+  position   String
+  visits     Visit[]
+}
+
+enum VisitStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+model Visit {
+  id         String      @id @default(uuid())
+  visitorId  String
+  employeeId String
+  purpose    String
+  checkIn    DateTime    @default(now())
+  checkOut   DateTime?
+  passCode   String      @unique
+  status     VisitStatus @default(ACTIVE)
+  createdAt  DateTime    @default(now())
+  visitor    Visitor     @relation(fields: [visitorId], references: [id])
+  employee   Employee    @relation(fields: [employeeId], references: [id])
+}

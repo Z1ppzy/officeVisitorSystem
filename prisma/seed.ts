@@ -1,0 +1,129 @@
+import { PrismaClient, VisitStatus } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+function randomDate(start: Date, end: Date): Date {
+  return new Date(
+    start.getTime() + Math.random() * (end.getTime() - start.getTime())
+  );
+}
+
+function randomElement<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+async function main() {
+  await prisma.visit.deleteMany();
+  await prisma.visitor.deleteMany();
+  await prisma.employee.deleteMany();
+
+  const employees = await prisma.employee.createManyAndReturn({
+    data: [
+      { name: "Алексей Иванов", department: "IT", position: "Руководитель IT" },
+      { name: "Мария Петрова", department: "HR", position: "HR-менеджер" },
+      { name: "Дмитрий Сидоров", department: "Безопасность", position: "Начальник охраны" },
+      { name: "Елена Козлова", department: "Бухгалтерия", position: "Главный бухгалтер" },
+      { name: "Сергей Новиков", department: "Администрация", position: "Директор" },
+    ],
+  });
+
+  const visitorData = [
+    { fullName: "Андрей Морозов", phone: "+7 900 111 2233", email: "morozov@mail.ru", documentNumber: "4510 123456" },
+    { fullName: "Светлана Орлова", phone: "+7 911 222 3344", email: "orlova@gmail.com", documentNumber: "4511 234567" },
+    { fullName: "Николай Зайцев", phone: "+7 922 333 4455", email: null, documentNumber: "4512 345678" },
+    { fullName: "Татьяна Белова", phone: "+7 933 444 5566", email: "belova@yandex.ru", documentNumber: "4513 456789" },
+    { fullName: "Виктор Громов", phone: "+7 944 555 6677", email: null, documentNumber: "4514 567890" },
+    { fullName: "Ольга Соколова", phone: "+7 955 666 7788", email: "sokolova@mail.ru", documentNumber: "4515 678901" },
+    { fullName: "Павел Волков", phone: "+7 966 777 8899", email: "volkov@inbox.ru", documentNumber: "4516 789012" },
+    { fullName: "Ирина Лебедева", phone: "+7 977 888 9900", email: null, documentNumber: "4517 890123" },
+    { fullName: "Константин Медведев", phone: "+7 988 999 0011", email: "medvedev@bk.ru", documentNumber: "4518 901234" },
+    { fullName: "Наталья Фёдорова", phone: "+7 999 000 1122", email: "fedorova@mail.ru", documentNumber: "4519 012345" },
+    { fullName: "Артём Щербаков", phone: "+7 900 123 4567", email: null, documentNumber: "4520 123456" },
+    { fullName: "Юлия Васильева", phone: "+7 911 234 5678", email: "vasileva@gmail.com", documentNumber: "4521 234567" },
+    { fullName: "Роман Попов", phone: "+7 922 345 6789", email: "popov@mail.ru", documentNumber: "4522 345678" },
+    { fullName: "Анна Смирнова", phone: "+7 933 456 7890", email: null, documentNumber: "4523 456789" },
+    { fullName: "Денис Кузнецов", phone: "+7 944 567 8901", email: "kuznetsov@yandex.ru", documentNumber: "4524 567890" },
+    { fullName: "Марина Захарова", phone: "+7 955 678 9012", email: null, documentNumber: "4525 678901" },
+    { fullName: "Илья Тихонов", phone: "+7 966 789 0123", email: "tikhonov@bk.ru", documentNumber: "4526 789012" },
+    { fullName: "Екатерина Макарова", phone: "+7 977 890 1234", email: "makarova@inbox.ru", documentNumber: "4527 890123" },
+    { fullName: "Алексей Никитин", phone: "+7 988 901 2345", email: null, documentNumber: "4528 901234" },
+    { fullName: "Людмила Романова", phone: "+7 999 012 3456", email: "romanova@mail.ru", documentNumber: "4529 012345" },
+    { fullName: "Михаил Сергеев", phone: "+7 900 234 5678", email: "sergeev@gmail.com", documentNumber: "4530 123456" },
+    { fullName: "Валентина Кириллова", phone: "+7 911 345 6789", email: null, documentNumber: "4531 234567" },
+    { fullName: "Борис Матвеев", phone: "+7 922 456 7890", email: "matveev@mail.ru", documentNumber: "4532 345678" },
+    { fullName: "Галина Степанова", phone: "+7 933 567 8901", email: null, documentNumber: "4533 456789" },
+    { fullName: "Игорь Яковлев", phone: "+7 944 678 9012", email: "yakovlev@yandex.ru", documentNumber: "4534 567890" },
+    { fullName: "Нина Андреева", phone: "+7 955 789 0123", email: "andreeva@bk.ru", documentNumber: "4535 678901" },
+    { fullName: "Владимир Алексеев", phone: "+7 966 890 1234", email: null, documentNumber: "4536 789012" },
+    { fullName: "Тамара Герасимова", phone: "+7 977 901 2345", email: "gerasimova@mail.ru", documentNumber: "4537 890123" },
+    { fullName: "Евгений Пономарёв", phone: "+7 988 012 3456", email: null, documentNumber: "4538 901234" },
+    { fullName: "Зинаида Ковалёва", phone: "+7 999 123 4567", email: "kovaleva@inbox.ru", documentNumber: "4539 012345" },
+  ];
+
+  const visitors = await prisma.visitor.createManyAndReturn({ data: visitorData });
+
+  const purposes = [
+    "Деловая встреча",
+    "Собеседование",
+    "Подписание договора",
+    "Техническое обслуживание",
+    "Доставка документов",
+    "Консультация",
+    "Плановая проверка",
+    "Обучение",
+  ];
+
+  const statuses: VisitStatus[] = ["ACTIVE", "COMPLETED", "CANCELLED"];
+  const statusWeights = [0.15, 0.75, 0.10];
+
+  const now = new Date();
+  const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+  let passCodeCounter = 1;
+
+  const visits = [];
+  for (let i = 0; i < 100; i++) {
+    const checkIn = randomDate(sixtyDaysAgo, now);
+    const rand = Math.random();
+    let status: VisitStatus;
+    if (rand < statusWeights[0]) {
+      status = "ACTIVE";
+    } else if (rand < statusWeights[0] + statusWeights[1]) {
+      status = "COMPLETED";
+    } else {
+      status = "CANCELLED";
+    }
+
+    const checkOut =
+      status === "COMPLETED"
+        ? new Date(checkIn.getTime() + Math.random() * 4 * 60 * 60 * 1000)
+        : null;
+
+    const year = checkIn.getFullYear();
+    const code = String(passCodeCounter).padStart(4, "0");
+    passCodeCounter++;
+
+    visits.push({
+      visitorId: randomElement(visitors).id,
+      employeeId: randomElement(employees).id,
+      purpose: randomElement(purposes),
+      checkIn,
+      checkOut,
+      passCode: `VIS-${year}-${code}`,
+      status,
+    });
+  }
+
+  for (const visit of visits) {
+    await prisma.visit.create({ data: visit });
+  }
+
+  console.log("Seed completed: 5 employees, 30 visitors, 100 visits");
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(() => prisma.$disconnect());
