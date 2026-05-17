@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import toast from "react-hot-toast";
 import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { useAuth } from "@/components/AuthProvider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,7 @@ interface Employee {
 }
 
 export default function EmployeesPage() {
+  const { user, loading: authLoading } = useAuth();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -32,18 +34,33 @@ export default function EmployeesPage() {
   const [form, setForm] = useState({ name: "", department: "", position: "" });
   const [editDraft, setEditDraft] = useState({ name: "", department: "", position: "" });
   const [saving, setSaving] = useState(false);
+  const canManage = user?.role === "ADMIN";
 
   const fetchEmployees = useCallback(async () => {
+    if (!canManage) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const res = await fetch("/api/employees");
     const data = await res.json();
     setEmployees(data.employees);
     setLoading(false);
-  }, []);
+  }, [canManage]);
 
   useEffect(() => {
-    fetchEmployees();
-  }, [fetchEmployees]);
+    if (!authLoading) fetchEmployees();
+  }, [authLoading, fetchEmployees]);
+
+  if (!authLoading && !canManage) {
+    return (
+      <Card>
+        <CardContent className="p-8 text-center text-sm text-gray-500">
+          Нет доступа к управлению сотрудниками
+        </CardContent>
+      </Card>
+    );
+  }
 
   async function handleAdd() {
     if (!form.name || !form.department || !form.position) {

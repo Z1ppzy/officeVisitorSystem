@@ -1,90 +1,50 @@
-# Система регистрации посетителей организации
+# Система регистрации посетителей
 
-Fullstack-приложение для учёта посетителей на Next.js 14 с MySQL, Prisma и Docker.
-
-## Стек
-
-- **Frontend:** Next.js 14 App Router, TypeScript, Tailwind CSS, shadcn/ui, Recharts
-- **Backend:** Next.js API Routes, Prisma ORM
-- **БД:** MySQL 8.0
-- **Инфраструктура:** Docker Compose
+Fullstack-приложение для учёта посетителей офиса: Next.js 14, Prisma, MySQL и Docker Compose.
 
 ## Быстрый старт
 
 ```bash
-git clone https://github.com/Z1ppzy/officeVisitorSystem.git
-cd officeVisitorSystem
 docker compose up --build
 ```
 
-Приложение запустится на [http://localhost:3000](http://localhost:3000).  
-База данных автоматически заполняется тестовыми данными (5 сотрудников, 30 посетителей, 100 визитов).
+Приложение будет доступно на http://localhost:3000.
+
+При старте контейнер применяет миграции и заполняет демо-данные: сотрудников, посетителей, визиты и аккаунты пользователей.
+
+## Демо-аккаунты
+
+| Роль | Email | Пароль |
+| --- | --- | --- |
+| Админ | `admin@office.local` | `admin123` |
+| Пользователь | `operator@office.local` | `user123` |
+
+Админ управляет сотрудниками и пользователями. Обычный пользователь может работать с журналом посетителей и визитами, но не получает доступ к админским разделам.
 
 ## Разработка без Docker
 
-### Требования
-
-- Node.js 20+
-- MySQL 8.0
-
-### Установка
-
 ```bash
-# Установить зависимости
-npm install
-
-# Скопировать и настроить переменные окружения
-cp .env.example .env
-# Отредактировать .env: указать свою строку подключения к БД
-
-# Применить миграции
-npx prisma migrate dev
-
-# Заполнить тестовыми данными
-npm run db:seed
-
-# Запустить dev-сервер
-npm run dev
+pnpm install
+pnpm prisma generate
+pnpm prisma migrate dev
+pnpm run db:seed
+pnpm run dev
 ```
 
-## Переменные окружения
+Переменные окружения:
 
-| Переменная     | Описание                    | Пример                                         |
-| -------------- | --------------------------- | ---------------------------------------------- |
-| `DATABASE_URL` | Строка подключения к MySQL  | `mysql://root:password@localhost:3306/visitors_db` |
-
-## Структура проекта
-
-```
-├── app/
-│   ├── api/              # API Routes
-│   │   ├── analytics/    # GET статистика
-│   │   ├── employees/    # CRUD сотрудников
-│   │   ├── visitors/     # CRUD посетителей
-│   │   └── visits/       # CRUD + checkout визитов
-│   ├── employees/        # Страница сотрудников
-│   ├── visitors/         # Список + карточка посетителя
-│   ├── visits/           # Журнал визитов
-│   └── page.tsx          # Dashboard
-├── components/
-│   ├── ui/               # shadcn/ui компоненты
-│   ├── Sidebar.tsx
-│   └── NewVisitModal.tsx
-├── lib/
-│   ├── prisma.ts
-│   └── utils.ts
-├── prisma/
-│   ├── schema.prisma
-│   └── seed.ts
-├── Dockerfile
-└── docker-compose.yml
+```env
+DATABASE_URL=mysql://root:password@localhost:3306/visitors_db
+AUTH_SECRET=replace-with-a-long-random-string
 ```
 
-## Возможности
+## Основные возможности
 
-- **Dashboard** — статистика за день/месяц, графики посещений (LineChart, PieChart), таблица активных визитов с кнопкой выхода
-- **Посетители** — поиск с debounce, пагинация, inline-редактирование карточки, история визитов
-- **Визиты** — журнал с фильтрами по дате и статусу, экспорт в CSV
-- **Сотрудники** — справочник с полным CRUD
-- Автогенерация пропуска: `VIS-{YYYY}-{0001}`
-- Toast-уведомления, skeleton-загрузка, валидация форм через Zod
+- регистрация и вход пользователей;
+- роли `ADMIN` и `USER`;
+- админская страница управления аккаунтами;
+- закрытые API-роуты и проверка прав на сервере;
+- dashboard со статистикой;
+- журнал визитов с фильтрами и экспортом CSV;
+- справочники посетителей и сотрудников;
+- автоматическое создание демо-данных через seed.

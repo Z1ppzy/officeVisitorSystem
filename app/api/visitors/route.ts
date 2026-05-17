@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { requireAuthenticated } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -12,6 +13,9 @@ const createSchema = z.object({
 });
 
 export async function GET(req: NextRequest) {
+  const auth = await requireAuthenticated(req);
+  if ("response" in auth) return auth.response;
+
   const { searchParams } = new URL(req.url);
   const search = searchParams.get("search") ?? "";
   const page = Math.max(1, Number(searchParams.get("page") ?? 1));
@@ -46,6 +50,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireAuthenticated(req);
+  if ("response" in auth) return auth.response;
+
   const body = await req.json();
   const parsed = createSchema.safeParse(body);
   if (!parsed.success) {

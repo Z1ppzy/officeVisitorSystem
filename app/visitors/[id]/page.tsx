@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { ArrowLeft, Pencil, Check, X } from "lucide-react";
+import { useAuth } from "@/components/AuthProvider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,6 +47,7 @@ interface Visitor {
 export default function VisitorDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { user } = useAuth();
   const [visitor, setVisitor] = useState<Visitor | null>(null);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState({ fullName: "", phone: "", email: "", documentNumber: "" });
@@ -101,6 +103,7 @@ export default function VisitorDetailPage() {
     { key: "documentNumber", label: "Документ" },
     { key: "email", label: "Email" },
   ] as const;
+  const canEdit = user?.role === "ADMIN";
 
   return (
     <div className="space-y-6">
@@ -114,7 +117,7 @@ export default function VisitorDetailPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base">Данные посетителя</CardTitle>
-          {!editing ? (
+          {!canEdit ? null : !editing ? (
             <Button size="sm" variant="outline" className="gap-1" onClick={() => setEditing(true)}>
               <Pencil className="h-3 w-3" />
               Редактировать

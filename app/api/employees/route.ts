@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { requireAdmin, requireAuthenticated } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +11,10 @@ const schema = z.object({
   position: z.string().min(2),
 });
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const auth = await requireAuthenticated(req);
+  if ("response" in auth) return auth.response;
+
   const employees = await prisma.employee.findMany({
     orderBy: { name: "asc" },
     include: { _count: { select: { visits: true } } },
@@ -19,6 +23,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireAdmin(req);
+  if ("response" in auth) return auth.response;
+
   const body = await req.json();
   const parsed = schema.safeParse(body);
   if (!parsed.success) {

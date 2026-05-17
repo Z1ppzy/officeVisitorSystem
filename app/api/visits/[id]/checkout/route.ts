@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireAuthenticated } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
 export async function PATCH(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const auth = await requireAuthenticated(req);
+  if ("response" in auth) return auth.response;
+
   const visit = await prisma.visit.findUnique({ where: { id: params.id } });
   if (!visit) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (visit.status !== "ACTIVE") {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { requireAdmin, requireAuthenticated } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -12,9 +13,12 @@ const updateSchema = z.object({
 });
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const auth = await requireAuthenticated(req);
+  if ("response" in auth) return auth.response;
+
   const visitor = await prisma.visitor.findUnique({
     where: { id: params.id },
     include: {
@@ -33,6 +37,9 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const auth = await requireAdmin(req);
+  if ("response" in auth) return auth.response;
+
   const body = await req.json();
   const parsed = updateSchema.safeParse(body);
   if (!parsed.success) {
