@@ -3,15 +3,19 @@ services:
     image: mysql:8.0
     container_name: visitor_db
     restart: unless-stopped
+    command: ["mysqld", "--init-file=/docker-entrypoint-initdb.d/init.sql"]
     environment:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: visitors_db
+      MYSQL_USER: visitor_user
+      MYSQL_PASSWORD: visitor_password
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "visitor_user", "-pvisitor_password"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -23,7 +27,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: mysql://root:password@db:3306/visitors_db
+      DATABASE_URL: mysql://visitor_user:visitor_password@db:3306/visitors_db
       AUTH_SECRET: docker-local-auth-secret-change-me
     depends_on:
       db:

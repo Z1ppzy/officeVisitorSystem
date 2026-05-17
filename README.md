@@ -34,7 +34,7 @@ pnpm run dev
 Переменные окружения:
 
 ```env
-DATABASE_URL=mysql://root:password@localhost:3306/visitors_db
+DATABASE_URL=mysql://visitor_user:visitor_password@localhost:3306/visitors_db
 AUTH_SECRET=replace-with-a-long-random-string
 ```
 
